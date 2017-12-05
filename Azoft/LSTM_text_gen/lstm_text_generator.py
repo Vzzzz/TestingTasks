@@ -84,10 +84,10 @@ def main(args):
     else:
         model_path = args.model
 
-    if args.text is None:
+    if args.input is None:
         text_path = get_file('R&D article_texts.txt', text_url)
     else:
-        text_path = args.text
+        text_path = args.input
 
     text = open(text_path).read().lower()
     chars = sorted(list(set(text)))
@@ -95,7 +95,7 @@ def main(args):
     model = build_model(sequence_length, len(chars))
     model.load_weights(model_path)
 
-    #Генерируем 10 вариантов текста, начиная со случайного стартового значения
+    # Generate 10 samples of text starting from random seed
     for i in range(10):
         start_index = random.randint(0, len(text) - sequence_length - 1)
         sentence = gen_text(model, 200, text, start_index, chars)
