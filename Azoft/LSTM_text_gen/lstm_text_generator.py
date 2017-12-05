@@ -1,3 +1,6 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+
 #https://github.com/fchollet/keras/blob/master/examples/lstm_text_generation.py
 
 from __future__ import print_function
