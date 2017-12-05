@@ -36,26 +36,6 @@ def sample(preds, temperature=1.0):
     probas = np.random.multinomial(1, preds, 1)
     return np.argmax(probas)
 
-def prepare_data(text):
-    chars = sorted(list(set(text)))
-    print('total chars:', len(chars))
-    char_indices = dict((c, i) for i, c in enumerate(chars))
-    indices_char = dict((i, c) for i, c in enumerate(chars))
-    sentences = []
-    next_chars = []
-    for i in range(0, len(text) - sequence_length, step):
-        sentences.append(text[i: i + sequence_length])
-        next_chars.append(text[i + sequence_length])
-    print('nb sequences:', len(sentences))
-    print('Vectorization...')
-    x = np.zeros((len(sentences), sequence_length, len(chars)), dtype=np.bool)
-    y = np.zeros((len(sentences), len(chars)), dtype=np.bool)
-    for i, sentence in enumerate(sentences):
-        for t, char in enumerate(sentence):
-            x[i, t, char_indices[char]] = 1
-        y[i, char_indices[next_chars[i]]] = 1
-    return (x, y)
-
 def gen_text(model, length, text, start_index, chars, diversity=0.2):
     char_indices = dict((c, i) for i, c in enumerate(chars))
     indices_char = dict((i, c) for i, c in enumerate(chars))
@@ -63,7 +43,6 @@ def gen_text(model, length, text, start_index, chars, diversity=0.2):
     sentence = text[start_index: start_index + sequence_length]
     generated += sentence
     print('Generating with seed: "' + sentence + '"')
-    sys.stdout.write(generated)
     for i in range(length):
         x_pred = np.zeros((1, sequence_length, len(chars)))
         for t, char in enumerate(sentence):
@@ -84,10 +63,10 @@ def main(args):
     else:
         model_path = args.model
 
-    if args.input is None:
+    if args.text is None:
         text_path = get_file('R&D article_texts.txt', text_url)
     else:
-        text_path = args.input
+        text_path = args.text
 
     text = open(text_path).read().lower()
     chars = sorted(list(set(text)))
@@ -95,16 +74,16 @@ def main(args):
     model = build_model(sequence_length, len(chars))
     model.load_weights(model_path)
 
-    # Generate 10 samples of text starting from random seed
     for i in range(10):
         start_index = random.randint(0, len(text) - sequence_length - 1)
         sentence = gen_text(model, 200, text, start_index, chars)
         print(sentence)
         print()
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', help='path to model checkpoint file', default=None)
-    parser.add_argument('--input', help='path to training text file', default=None)
+    parser.add_argument('--text', help='path to training text file', default=None)
     args = parser.parse_args()
     main(args)
